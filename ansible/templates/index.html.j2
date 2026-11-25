@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Дәріхана — 5-нұсқа</title>
+  <style>
+    body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+           font-family: "Segoe UI", Arial, sans-serif; background: linear-gradient(135deg, #e6f7f1, #d3ecff); color: #12372a; }
+    .card { background: #fff; padding: 40px 56px; border-radius: 20px; box-shadow: 0 20px 50px rgba(18, 55, 42, .15); text-align: center; }
+    h1 { margin: 0 0 8px; font-size: 40px; color: #0f9d6b; }
+    .cross { font-size: 48px; }
+    table { margin: 24px auto 0; border-collapse: collapse; font-size: 18px; }
+    td { padding: 8px 16px; border-bottom: 1px solid #e3eee9; text-align: left; }
+    td:first-child { color: #5b7a6e; }
+    code { background: #eef7f3; padding: 2px 8px; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="cross">✚</div>
+    <h1>Дәріхана — 5-нұсқа</h1>
+    <p>Бұл бетті Ansible Jinja2 template арқылы жасады</p>
+    <table>
+      <tr><td>Хост атауы</td><td><code>{{ ansible_hostname }}</code></td></tr>
+      <tr><td>IP-адрес</td><td><code>{{ ansible_default_ipv4.address }}</code></td></tr>
+      <tr><td>ОЖ</td><td><code>{{ ansible_distribution }} {{ ansible_distribution_version }}</code></td></tr>
+    </table>
+  </div>
+</body>
+</html>

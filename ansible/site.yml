@@ -1,0 +1,89 @@
+---
+# Дәріхана — 5-нұсқа. Один запуск настраивает vm1 (web) и vm2 (storage).
+
+- name: vm1 — Nginx и страница Дәріхана
+  hosts: web
+  become: true
+  tasks:
+    - name: Установить Nginx
+      ansible.builtin.apt:
+        name: nginx
+        state: present
+        update_cache: true
+
+    - name: Создать index.html из Jinja2-шаблона
+      ansible.builtin.template:
+        src: templates/index.html.j2
+        dest: /var/www/html/index.html
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Reload nginx
+
+    # В контейнере нет systemd, поэтому проверяем процесс и запускаем nginx напрямую.
+    # Если nginx уже работает — задача пропускается (идемпотентность, changed=0).
+    - name: Проверить, запущен ли Nginx
+      ansible.builtin.command: pgrep -x nginx
+      register: nginx_running
+      changed_when: false
+      failed_when: false
+
+    - name: Запустить Nginx (если не запущен)
+      ansible.builtin.command: nginx
+      when: nginx_running.rc != 0
+
+    - name: Применить изменения шаблона до проверки
+      ansible.builtin.meta: flush_handlers
+
+    - name: Проверить страницу модулем uri (код 200)
+      ansible.builtin.uri:
+        url: http://localhost/
+        status_code: 200
+        return_content: true
+      register: page
+
+    - name: Проверить наличие слова «Дәріхана»
+      ansible.builtin.assert:
+        that:
+          - "'Дәріхана' in page.content"
+        success_msg: "Бет жұмыс істейді: HTTP {{ page.status }}, «Дәріхана» сөзі табылды"
+        fail_msg: "«Дәріхана» сөзі бетте жоқ"
+
+  handlers:
+    - name: Reload nginx
+      ansible.builtin.command: nginx -s reload
+
+- name: vm2 — каталог /opt/pharmacy и три файла
+  hosts: storage
+  become: true
+  vars:
+    pharmacy_files:
+      - orders.txt
+      - stock.txt
+      - clients.txt
+  tasks:
+    - name: Создать каталог /opt/pharmacy
+      ansible.builtin.file:
+        path: /opt/pharmacy
+        state: directory
+        mode: "0755"
+
+    - name: Создать файлы циклом loop
+      ansible.builtin.copy:
+        dest: "/opt/pharmacy/{{ item }}"
+        content: "{{ item }}\n"
+        mode: "0644"
+      loop: "{{ pharmacy_files }}"
+
+    - name: Подсчитать файлы модулем find
+      ansible.builtin.find:
+        paths: /opt/pharmacy
+        file_type: file
+      register: found
+
+    - name: Проверить, что файлов ровно 3
+      ansible.builtin.assert:
+        that:
+          - found.matched == 3
+        success_msg: "/opt/pharmacy ішінде дәл {{ found.matched }} файл бар"
+        fail_msg: "Күтілгені 3 файл, табылғаны {{ found.matched }}"

@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gateway-config
+  namespace: v5-pharmacy
+data:
+  default.conf: |
+    server {
+        listen 80;
+        server_name _;
+    
+        # /api/pharmacy/medicines -> pharmacy-api:8000/medicines (префикс удаляется за счёт "/" в конце proxy_pass)
+        location /api/pharmacy/ {
+            proxy_pass http://pharmacy-api:8000/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+        }
+    
+        # /api/delivery/delivery/estimate -> delivery-service:8000/delivery/estimate
+        location /api/delivery/ {
+            proxy_pass http://delivery-service:8000/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+        }
+    
+        # всё остальное -> React-frontend
+        location / {
+            proxy_pass http://pharmacy-frontend:80;
+            proxy_set_header Host $host;
+        }
+    }

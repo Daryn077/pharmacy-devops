@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+
+# Node
+node_modules/
+dist/
+
+# SSH-ключи — никогда не коммитить
+ansible/authorized_keys
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+pharmacy_key*
+
+# IDE / OS
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
